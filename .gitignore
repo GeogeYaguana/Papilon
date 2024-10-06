@@ -1,0 +1,28 @@
+# Node modules
+node_modules/
+mobile/node_modules/
+frontend/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+
+# React Native
+ios/
+android/
+*.xcworkspace
+*.xcodeproj
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+
+# Docker
+*.docker
+
