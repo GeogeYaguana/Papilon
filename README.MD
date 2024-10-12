@@ -232,6 +232,43 @@ npm run format
 
 El backend proporciona APIs RESTful para interactuar con el frontend y la aplicación móvil.
 
+#### Crear entorno virtual e instalar dependencias
+
+```bash
+python3 -m venv venv
+source venv/bin/activate  # En Linux en windows investigar xd
+pip install -r requirements.txt
+flask run 
+
+```
+pueden probar mediante curl las diferentes peticiones
+
+```bash
+curl -X POST http://127.0.0.1:5000/login \
+-H "Content-Type: application/json" \
+-d '{
+    "usuario_nombre": "juanperez",
+    "password": "password123"
+}'
+
+curl -X GET http://127.0.0.1:5000/usuario
+
+//modificar los parametros este usuario ya fue subido y no acepta usuarios repetidos
+curl -X POST http://127.0.0.1:5000/usuario \
+-H "Content-Type: application/json" \
+-d '{
+    "nombre": "Juan Perez",
+    "usuario_nombre": "juanperez",
+    "password": "password123",
+    "correo": "juanperez@gmail.com",
+    "tipo_usuario": "local",
+    "url_imagen": "https://example.com/imagen.jpg",
+    "telefono": "1234567890"
+}'
+
+
+
+```
 #### Comandos Útiles
 
 ```bash
