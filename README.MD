@@ -42,51 +42,43 @@ automáticamente en la aplicación móvil.
 ## Tecnologías Utilizadas
 
 ### Frontend
-├── @testing-library/jest-dom@5.17.0
-├── @testing-library/react@13.4.0
-├── @testing-library/user-event@13.5.0
-├── @types/jest@27.5.2
-├── @types/node@16.18.112
-├── @types/react-dom@18.3.0
-├── @types/react@18.3.11
-├── axios@1.7.7
-├── eslint-config-prettier@9.1.0
-├── eslint-plugin-react@7.37.1
-├── eslint@8.57.1
-├── prettier@3.3.3
-├── react-dom@18.3.1
-├── react-router-dom@6.26.2
-├── react-scripts@5.0.1
-├── react@18.3.1
-├── typescript@4.9.5
-├── web-vitals@2.1.4
-└── zustand@5.0.0-rc.2
+
+- @testing-library/jest-dom@5.17.0
+- @testing-library/react@13.4.0
+- @testing-library/user-event@13.5.0
+- @types/jest@27.5.2
+- @types/node@16.18.112
+- @types/react-dom@18.3.0
+- @types/react@18.3.11
+- axios@1.7.7
+- eslint-config-prettier@9.1.0
+- eslint-plugin-react@7.37.1
+- eslint@8.57.1
+- prettier@3.3.3
+- react-dom@18.3.1
+- react-router-dom@6.26.2
+- react-scripts@5.0.1
+- react@18.3.1
+- typescript@4.9.5
+- web-vitals@2.1.4
+- zustand@5.0.0-rc.2
 
 
 ### Backend
-blinker==1.8.2
 
-click==8.1.7
+- blinker==1.8.2
+- click==8.1.7
+- Flask==3.0.3
+- Flask-SQLAlchemy==3.1.1
+- greenlet==3.1.1
+- itsdangerous==2.2.0
+- Jinja2==3.1.4
+- MarkupSafe==3.0.1
+- psycopg2==2.9.9
+- SQLAlchemy==2.0.35
+- typing_extensions==4.12.2
+- Werkzeug==3.0.4
 
-Flask==3.0.3
-
-Flask-SQLAlchemy==3.1.1
-
-greenlet==3.1.1
-
-itsdangerous==2.2.0
-
-Jinja2==3.1.4
-
-MarkupSafe==3.0.1
-
-psycopg2==2.9.9
-
-SQLAlchemy==2.0.35
-
-typing_extensions==4.12.2
-
-Werkzeug==3.0.4
 
 ### Base de Datos
 - **PostgreSQL** ^15.4
