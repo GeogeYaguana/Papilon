@@ -118,7 +118,7 @@ Antes de comenzar, asegúrate de tener instalado lo siguiente en tu máquina:
 
 ```bash
 # Clona el repositorio
-git clone https://github.com/tu-usuario/mi-proyecto.git
+git clone https://github.com/GeogeYaguana/Papilon.git
 
 # Navega al directorio del proyecto
 cd mi-proyecto
