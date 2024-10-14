@@ -6,8 +6,19 @@
 
 ## Descripción
 
-**Papilon** es una aplicación completa que abarca una página web desarrollada con **React**, una aplicación móvil con **React Native**, un backend robusto construido con **Flask**, y una base de datos **PostgreSQL**. La arquitectura del proyecto está diseñada para ser escalable, mantenible y eficiente, utilizando **Docker** para facilitar el desarrollo y despliegue.
-
+El proyecto se enfoca en desarrollar una aplicación móvil y una página web destinada a
+facilitar el canje de puntos de fidelización acumulados en locales afiliados por compras
+realizadas. Las soluciones anteriores al problema generalmente han sido sistemas de
+fidelización individuales para cada local, lo que resultaba en una falta de uniformidad y
+eficiencia en la gestión de puntos y recompensas. Además, el uso de tarjetas físicas de
+fidelización, propensas a pérdida y desgaste, no permitía visualizar ofertas ni canjear
+puntos en tiempo real. La solución esperada es una plataforma digital interconectada que,
+a través de la aplicación móvil, permitirá a los usuarios visualizar ofertas y canjear puntos
+fácilmente desde cualquier ubicación. La página web proporcionará a los propietarios de
+locales una herramienta robusta para gestionar productos y puntajes de fidelización, con
+un sistema de permisos para garantizar la seguridad de los datos, asegurando que solo
+aquellos con permisos de administrador puedan realizar cambios, que se reflejarán
+automáticamente en la aplicación móvil.
 ## Tabla de Contenidos
 
 - [Tecnologías Utilizadas](#tecnologías-utilizadas)
@@ -16,10 +27,8 @@
 - [Instalación](#instalación)
   - [Clonar el Repositorio](#clonar-el-repositorio)
   - [Configuración de Variables de Entorno](#configuración-de-variables-de-entorno)
-  - [Iniciar los Servicios con Docker](#iniciar-los-servicios-con-docker)
 - [Uso](#uso)
   - [Frontend (Página Web)](#frontend-página-web)
-  - [Mobile (Aplicación Móvil)](#mobile-aplicación-móvil)
   - [Backend (Flask)](#backend-flask)
   - [Base de Datos (PostgreSQL)](#base-de-datos-postgresql)
 - [Pruebas](#pruebas)
@@ -33,41 +42,55 @@
 ## Tecnologías Utilizadas
 
 ### Frontend
-- **React** ^18.2.0
-- **TypeScript** ^4.9.5
-- **Redux Toolkit** ^1.9.5
-- **React Router DOM** ^6.x
-- **Axios** ^0.27.x
-- **ESLint** ^8.50.0
-- **Prettier** ^3.0.0
+├── @testing-library/jest-dom@5.17.0
+├── @testing-library/react@13.4.0
+├── @testing-library/user-event@13.5.0
+├── @types/jest@27.5.2
+├── @types/node@16.18.112
+├── @types/react-dom@18.3.0
+├── @types/react@18.3.11
+├── axios@1.7.7
+├── eslint-config-prettier@9.1.0
+├── eslint-plugin-react@7.37.1
+├── eslint@8.57.1
+├── prettier@3.3.3
+├── react-dom@18.3.1
+├── react-router-dom@6.26.2
+├── react-scripts@5.0.1
+├── react@18.3.1
+├── typescript@4.9.5
+├── web-vitals@2.1.4
+└── zustand@5.0.0-rc.2
 
-### Mobile
-- **React Native** ^0.72.0
-- **Expo** ^48.x
-- **Redux Toolkit** ^1.9.5
-- **React Navigation** ^6.x
-- **Axios** ^0.27.x
-- **ESLint** ^8.50.0
-- **Prettier** ^3.0.0
 
 ### Backend
-- **Python** ^3.11
-- **Flask** ^2.3.2
-- **Flask-RESTful** ^0.3.9
-- **Flask-Cors** ^3.1.1
-- **SQLAlchemy** ^2.0.x
-- **psycopg2-binary** ^2.9.x
-- **PyTest** ^7.4.0
-- **Flake8** ^4.0.1
+blinker==1.8.2
+
+click==8.1.7
+
+Flask==3.0.3
+
+Flask-SQLAlchemy==3.1.1
+
+greenlet==3.1.1
+
+itsdangerous==2.2.0
+
+Jinja2==3.1.4
+
+MarkupSafe==3.0.1
+
+psycopg2==2.9.9
+
+SQLAlchemy==2.0.35
+
+typing_extensions==4.12.2
+
+Werkzeug==3.0.4
 
 ### Base de Datos
 - **PostgreSQL** ^15.4
 
-### Infraestructura
-- **Docker** ^20.10.x
-- **Docker Compose** ^3.8
-- **Terraform** ^1.4.0 (opcional para infraestructura avanzada)
-- **Ansible** ^2.14.0 (opcional para gestión de configuración)
 
 ### CI/CD
 - **GitHub Actions**
@@ -79,27 +102,10 @@ mi-proyecto/
 ├── backend/
 │   ├── app.py
 │   ├── requirements.txt
-│   ├── Dockerfile
-│   └── tests/
 ├── frontend/
 │   ├── package.json
 │   ├── tsconfig.json
-│   ├── Dockerfile
 │   └── src/
-├── mobile/
-│   ├── package.json
-│   ├── app.json
-│   ├── Dockerfile
-│   └── src/
-├── database/
-│   └── docker-compose.yml (opcional si se gestiona desde el root)
-├── docker/
-│   └── (archivos de configuración adicionales)
-├── .github/
-│   └── workflows/
-│       ├── backend.yml
-│       └── frontend.yml
-├── docker-compose.yml
 ├── .gitignore
 ├── README.md
 └── LICENSE
@@ -110,8 +116,6 @@ mi-proyecto/
 Antes de comenzar, asegúrate de tener instalado lo siguiente en tu máquina:
 
 - [Git](https://git-scm.com/)
-- [Docker](https://www.docker.com/get-started)
-- [Docker Compose](https://docs.docker.com/compose/install/)
 - [Node.js](https://nodejs.org/) ^18.0.0
 - [Python](https://www.python.org/) ^3.11
 - [Yarn](https://yarnpkg.com/) (opcional, si prefieres usar Yarn sobre npm)
@@ -142,27 +146,15 @@ Añade las siguientes variables al archivo `.env`:
 ```env
 # Backend
 FLASK_ENV=development
-DATABASE_URL=postgresql://miusuario:mipassword@db:5432/mibasededatos
+DATABASE_URL=postgres://ubasg72abi62gl:pe57b2ca8503d9cbd58763ac4a87e1ae4ea39ae84c8ff769f0e87c490647e3472@c9pv5s2sq0i76o.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/ddpb2lu396gu31
 
 # Frontend
-REACT_APP_API_URL=http://localhost:5000/api
+REACT_APP_API_URL=http://localhost:5000/
 
-# Mobile (si es necesario)
-API_URL=http://localhost:5000/api
 ```
 
 **Nota:** Asegúrate de reemplazar `miusuario`, `mipassword` y `mibasededatos` con tus credenciales reales.
 
-### Iniciar los Servicios con Docker
-
-Docker simplifica el despliegue y la gestión de los diferentes servicios de la aplicación.
-
-```bash
-# Iniciar todos los servicios en segundo plano
-docker-compose up -d --build
-```
-
-Esto levantará los siguientes servicios:
 
 - **PostgreSQL** en el puerto `5432`
 - **Backend (Flask)** en el puerto `5000`
@@ -196,37 +188,10 @@ npm run lint
 npm run format
 ```
 
-### Mobile (Aplicación Móvil)
 
-Para desarrollar y probar la aplicación móvil, se recomienda usar **Expo**.
 
-#### Comandos Útiles
 
-```bash
-# Navega al directorio mobile
-cd mobile
 
-# Instalar dependencias
-npm install
-
-# Iniciar el servidor de Expo
-npm start
-
-# Abrir en Android
-npm run android
-
-# Abrir en iOS
-npm run ios
-
-# Ejecutar pruebas
-npm test
-
-# Linting
-npm run lint
-
-# Formateo de código
-npm run format
-```
 
 ### Backend (Flask)
 
@@ -300,11 +265,11 @@ La base de datos está gestionada mediante Docker y se conecta automáticamente 
 
 Puedes acceder a la base de datos usando herramientas como **pgAdmin** o **DBeaver** con las siguientes credenciales:
 
-- **Host:** localhost
-- **Puerto:** 5432
-- **Usuario:** miusuario
-- **Contraseña:** mipassword
-- **Base de Datos:** mibasededatos
+- **Host:** `c9pv5s2sq0i76o.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com`
+- **Puerto:** `5432`
+- **Usuario:** `ubasg72abi62gl`
+- **Contraseña:** `pe57b2ca8503d9cbd58763ac4a87e1ae4ea39ae84c8ff769f0e87c490647e3472`
+- **Base de Datos:** `ddpb2lu396gu31`
 
 ## Pruebas
 
@@ -351,7 +316,7 @@ El proyecto está configurado con **GitHub Actions** para automatizar los proces
 
 ## Contribución
 
-¡Contribuciones son bienvenidas! Sigue estos pasos para contribuir:
+Si deseas realizar algun cambio sustancial , incrementar alguna funcionalidad , corregir un bug por favor sigue estos pasos para contribuir:
 
 1. **Fork** el repositorio.
 2. Crea una **branch** para tu feature o bugfix:

@@ -2,9 +2,10 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.exc import SQLAlchemyError
+from flask_cors import CORS  # Importar la extensión CORS
 from flask_bcrypt import Bcrypt
-
 app = Flask(__name__)
+CORS(app)  # Habilitar CORS para todas las rutas
 
 bcrypt = Bcrypt(app)
 ##configuracion de la base de datos
