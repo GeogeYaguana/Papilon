@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from sqlalchemy.orm import Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.exc import SQLAlchemyError
@@ -124,6 +125,7 @@ def delete_usuario(id):
         return jsonify({'message': 'Usuario eliminado correctamente'})
     except SQLAlchemyError as e:
         return jsonify({'error': str(e)}), 400
+
 class Local(db.Model):
     __tablename__ = 'local'
 
@@ -151,24 +153,24 @@ class Local(db.Model):
             'geom': f'POINT({self.latitud} {self.longitud})',
             'fecha_registro': self.fecha_registro.strftime("%Y-%m-%d %H:%M:%S")
         }
-
 @app.route('/locales', methods=['GET'])
 def get_locales():
-    locales = Local.query.all()
-    resultado = []
+    with Session(db.engine) as session:
+        locales = session.query(Local).all()  # Obtener todos los locales
+        resultado = []
 
-    for local in locales:
-        usuario = Usuario.query.get(local.id_usuario)
-        local_data = local.serialize()
-        local_data['usuario'] = {
-            'id_usuario': usuario.id_usuario,
-            'nombre': usuario.nombre,
-            'usuario_nombre': usuario.usuario_nombre,
-            'correo': usuario.correo,
-            'tipo_usuario': usuario.tipo_usuario
-        }
-        resultado.append(local_data)
-    
+        for local in locales:
+            usuario = session.get(Usuario, local.id_usuario)  # Usar Session.get() en lugar de query.get()
+            local_data = local.serialize()  # Asumimos que Local tiene un método serialize
+            local_data['usuario'] = {
+                'id_usuario': usuario.id_usuario,
+                'nombre': usuario.nombre,
+                'usuario_nombre': usuario.usuario_nombre,
+                'correo': usuario.correo,
+                'tipo_usuario': usuario.tipo_usuario
+            }
+            resultado.append(local_data)
+
     return jsonify(resultado)
 
 
@@ -243,48 +245,50 @@ def create_usuario_y_cliente():
         return jsonify({'error': 'El tipo de usuario debe ser cliente para crear un cliente'}), 400
 
     try:
-        # Iniciar una transacción
-        with db.session.begin():
-            # Crear el usuario con SQL personalizado
-            sql_usuario = text("""
-                INSERT INTO usuario (nombre, usuario_nombre, password, correo, tipo_usuario, url_imagen, telefono)
-                VALUES (:nombre, :usuario_nombre, :password, :correo, :tipo_usuario, :url_imagen, :telefono)
-                RETURNING id_usuario
-            """)
-            result = db.session.execute(sql_usuario, {
-                'nombre': nombre,
-                'usuario_nombre': usuario_nombre,
-                'password': password,
-                'correo': correo,
-                'tipo_usuario': tipo_usuario,
-                'url_imagen': url_imagen,
-                'telefono': telefono
-            })
+        # Crear una nueva sesión explícita
+        with Session(db.engine) as session:
+            # Iniciar una transacción explícita dentro de la sesión
+            with session.begin():
+                # Crear el usuario con SQL personalizado
+                sql_usuario = text("""
+                    INSERT INTO usuario (nombre, usuario_nombre, password, correo, tipo_usuario, url_imagen, telefono)
+                    VALUES (:nombre, :usuario_nombre, :password, :correo, :tipo_usuario, :url_imagen, :telefono)
+                    RETURNING id_usuario
+                """)
+                result = session.execute(sql_usuario, {
+                    'nombre': nombre,
+                    'usuario_nombre': usuario_nombre,
+                    'password': password,
+                    'correo': correo,
+                    'tipo_usuario': tipo_usuario,
+                    'url_imagen': url_imagen,
+                    'telefono': telefono
+                })
 
-            # Obtener el ID del nuevo usuario creado
-            id_usuario = result.fetchone()[0]
+                # Obtener el ID del nuevo usuario creado
+                id_usuario = result.fetchone()[0]
 
-            # Crear el cliente asociado al usuario
-            sql_cliente = text("""
-                INSERT INTO cliente (id_usuario, puntos)
-                VALUES (:id_usuario, :puntos)
-            """)
-            db.session.execute(sql_cliente, {
-                'id_usuario': id_usuario,
-                'puntos': puntos
-            })
+                # Crear el cliente asociado al usuario
+                sql_cliente = text("""
+                    INSERT INTO cliente (id_usuario, puntos)
+                    VALUES (:id_usuario, :puntos)
+                """)
+                session.execute(sql_cliente, {
+                    'id_usuario': id_usuario,
+                    'puntos': puntos
+                })
 
-        # Confirmar la transacción
-        db.session.commit()
-
-        return jsonify({
-            'mensaje': 'Usuario y cliente creados correctamente',
-            'id_usuario': id_usuario
-        }), 201
+            # Confirmar la transacción (session.commit() es implícito en el bloque begin)
+            return jsonify({
+                'mensaje': 'Usuario y cliente creados correctamente',
+                'id_usuario': id_usuario
+            }), 201
 
     except SQLAlchemyError as e:
-        db.session.rollback()  # Revertir la transacción en caso de error
+        # No es necesario un rollback explícito dentro de session.begin(), ya que se hace automáticamente
         return jsonify({'error': str(e)}), 400
+
+    
 @app.route('/clientes', methods=['GET'])
 def get_clientes():
     clientes = Cliente.query.all()
@@ -305,24 +309,23 @@ def get_clientes():
     return jsonify(resultado)
 @app.route('/clientes/<int:id_cliente>', methods=['GET'])
 def get_cliente(id_cliente):
-    cliente = Cliente.query.get(id_cliente)
-    
-    if cliente is None:
-        return jsonify({'error': 'Cliente no encontrado'}), 404
+    with Session(db.engine) as session:
+        cliente = session.get(Cliente, id_cliente)
+        
+        if cliente is None:
+            return jsonify({'error': 'Cliente no encontrado'}), 404
 
-    usuario = Usuario.query.get(cliente.id_usuario)
-    cliente_data = cliente.serialize()
-    cliente_data['usuario'] = {
-        'id_usuario': usuario.id_usuario,
-        'nombre': usuario.nombre,
-        'usuario_nombre': usuario.usuario_nombre,
-        'correo': usuario.correo,
-        'tipo_usuario': usuario.tipo_usuario
-    }
+        usuario = session.get(Usuario, cliente.id_usuario)
+        cliente_data = cliente.serialize()
+        cliente_data['usuario'] = {
+            'id_usuario': usuario.id_usuario,
+            'nombre': usuario.nombre,
+            'usuario_nombre': usuario.usuario_nombre,
+            'correo': usuario.correo,
+            'tipo_usuario': usuario.tipo_usuario
+        }
 
-    return jsonify(cliente_data)
-
-    
+        return jsonify(cliente_data)
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
