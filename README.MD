@@ -222,6 +222,29 @@ curl -X POST http://127.0.0.1:5000/usuario \
     "url_imagen": "https://example.com/imagen.jpg",
     "telefono": "1234567890"
 }'
+curl -X POST http://localhost:5000/locales \
+-H "Content-Type: application/json" \
+-d '{
+  "nombre_local": "Restaurante La Cima",
+  "direccion": "Calle 123, Ciudad, País",
+  "cociente_puntos_local": 4.5,
+  "descripcion": "Un restaurante con vista espectacular.",
+  "latitud": -2.170998,
+  "longitud": -79.922356,
+  "id_usuario": 1
+}'
+curl -X POST http://localhost:5000/crear_cliente \
+-H "Content-Type: application/json" \
+-d '{
+  "nombre": "Juan Pérez",
+  "usuario_nombre": "juanp",
+  "password": "securepassword",
+  "correo": "juanp@example.com",
+  "tipo_usuario": "cliente",
+  "url_imagen": "https://example.com/imagen.jpg",
+  "telefono": "123456789",
+  "puntos": 100
+}'
 
 
 

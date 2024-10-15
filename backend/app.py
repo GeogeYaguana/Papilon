@@ -4,6 +4,8 @@ from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.exc import SQLAlchemyError
 from flask_cors import CORS  # Importar la extensión CORS
 from flask_bcrypt import Bcrypt
+from geoalchemy2 import Geography
+from sqlalchemy import text
 app = Flask(__name__)
 CORS(app)  # Habilitar CORS para todas las rutas
 
@@ -122,7 +124,205 @@ def delete_usuario(id):
         return jsonify({'message': 'Usuario eliminado correctamente'})
     except SQLAlchemyError as e:
         return jsonify({'error': str(e)}), 400
+class Local(db.Model):
+    __tablename__ = 'local'
 
+    id_local = db.Column(db.Integer, primary_key=True)
+    id_usuario = db.Column(db.Integer, db.ForeignKey('usuario.id_usuario', ondelete='CASCADE'), nullable=False)
+    nombre_local = db.Column(db.String(150), nullable=False)
+    direccion = db.Column(db.Text, nullable=False)
+    cociente_puntos_local = db.Column(db.Numeric(5, 2), default=0)
+    descripcion = db.Column(db.Text, nullable=True)
+    latitud = db.Column(db.Numeric(9, 6), nullable=True)
+    longitud = db.Column(db.Numeric(9, 6), nullable=True)
+    geom = db.Column(Geography('POINT', srid=4326), nullable=True)
+    fecha_registro = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def serialize(self):
+        return {
+            'id_local': self.id_local,
+            'id_usuario': self.id_usuario,
+            'nombre_local': self.nombre_local,
+            'direccion': self.direccion,
+            'cociente_puntos_local': str(self.cociente_puntos_local),
+            'descripcion': self.descripcion,
+            'latitud': str(self.latitud),
+            'longitud': str(self.longitud),
+            'geom': f'POINT({self.latitud} {self.longitud})',
+            'fecha_registro': self.fecha_registro.strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+@app.route('/locales', methods=['GET'])
+def get_locales():
+    locales = Local.query.all()
+    resultado = []
+
+    for local in locales:
+        usuario = Usuario.query.get(local.id_usuario)
+        local_data = local.serialize()
+        local_data['usuario'] = {
+            'id_usuario': usuario.id_usuario,
+            'nombre': usuario.nombre,
+            'usuario_nombre': usuario.usuario_nombre,
+            'correo': usuario.correo,
+            'tipo_usuario': usuario.tipo_usuario
+        }
+        resultado.append(local_data)
+    
+    return jsonify(resultado)
+
+
+@app.route('/locales', methods=['POST'])
+def create_local():
+    data = request.get_json()
+    nombre_local = data.get('nombre_local')
+    direccion = data.get('direccion')
+    cociente_puntos_local = data.get('cociente_puntos_local', 0)
+    descripcion = data.get('descripcion')
+    latitud = data.get('latitud')
+    longitud = data.get('longitud')
+    id_usuario = data.get('id_usuario')
+
+    # Verificar que el usuario existe y es del tipo 'local'
+    usuario = Usuario.query.get(id_usuario)
+    
+    if usuario is None:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    
+    if usuario.tipo_usuario != 'local':
+        return jsonify({'error': 'El usuario no tiene el tipo adecuado para asociarse con un local'}), 403
+
+    # Crear el nuevo local solo si el usuario es válido
+    nuevo_local = Local(
+        nombre_local=nombre_local,
+        direccion=direccion,
+        cociente_puntos_local=cociente_puntos_local,
+        descripcion=descripcion,
+        latitud=latitud,
+        longitud=longitud,
+        geom=f'POINT({latitud} {longitud})',
+        id_usuario=id_usuario
+    )
+    
+    try:
+        db.session.add(nuevo_local)
+        db.session.commit()
+        return jsonify(nuevo_local.serialize()), 201
+    except SQLAlchemyError as e:
+        return jsonify({'error': str(e)}), 400
+
+
+# Modelo para la tabla 'Cliente'
+class Cliente(db.Model):
+    __tablename__ = 'cliente'
+
+    id_cliente = db.Column(db.Integer, primary_key=True)
+    id_usuario = db.Column(db.Integer, db.ForeignKey('usuario.id_usuario', ondelete='CASCADE'), nullable=False)
+    puntos = db.Column(db.Integer, default=0)
+
+    def serialize(self):
+        return {
+            'id_cliente': self.id_cliente,
+            'id_usuario': self.id_usuario,
+            'puntos': self.puntos
+        }
+
+@app.route('/crear_cliente', methods=['POST'])
+def create_usuario_y_cliente():
+    data = request.get_json()
+    nombre = data.get('nombre')
+    usuario_nombre = data.get('usuario_nombre')
+    password = data.get('password')
+    correo = data.get('correo')
+    tipo_usuario = data.get('tipo_usuario')  # Debe ser 'cliente'
+    url_imagen = data.get('url_imagen')
+    telefono = data.get('telefono')
+    puntos = data.get('puntos', 0)
+
+    if tipo_usuario != 'cliente':
+        return jsonify({'error': 'El tipo de usuario debe ser cliente para crear un cliente'}), 400
+
+    try:
+        # Iniciar una transacción
+        with db.session.begin():
+            # Crear el usuario con SQL personalizado
+            sql_usuario = text("""
+                INSERT INTO usuario (nombre, usuario_nombre, password, correo, tipo_usuario, url_imagen, telefono)
+                VALUES (:nombre, :usuario_nombre, :password, :correo, :tipo_usuario, :url_imagen, :telefono)
+                RETURNING id_usuario
+            """)
+            result = db.session.execute(sql_usuario, {
+                'nombre': nombre,
+                'usuario_nombre': usuario_nombre,
+                'password': password,
+                'correo': correo,
+                'tipo_usuario': tipo_usuario,
+                'url_imagen': url_imagen,
+                'telefono': telefono
+            })
+
+            # Obtener el ID del nuevo usuario creado
+            id_usuario = result.fetchone()[0]
+
+            # Crear el cliente asociado al usuario
+            sql_cliente = text("""
+                INSERT INTO cliente (id_usuario, puntos)
+                VALUES (:id_usuario, :puntos)
+            """)
+            db.session.execute(sql_cliente, {
+                'id_usuario': id_usuario,
+                'puntos': puntos
+            })
+
+        # Confirmar la transacción
+        db.session.commit()
+
+        return jsonify({
+            'mensaje': 'Usuario y cliente creados correctamente',
+            'id_usuario': id_usuario
+        }), 201
+
+    except SQLAlchemyError as e:
+        db.session.rollback()  # Revertir la transacción en caso de error
+        return jsonify({'error': str(e)}), 400
+@app.route('/clientes', methods=['GET'])
+def get_clientes():
+    clientes = Cliente.query.all()
+    resultado = []
+
+    for cliente in clientes:
+        usuario = Usuario.query.get(cliente.id_usuario)
+        cliente_data = cliente.serialize()
+        cliente_data['usuario'] = {
+            'id_usuario': usuario.id_usuario,
+            'nombre': usuario.nombre,
+            'usuario_nombre': usuario.usuario_nombre,
+            'correo': usuario.correo,
+            'tipo_usuario': usuario.tipo_usuario
+        }
+        resultado.append(cliente_data)
+
+    return jsonify(resultado)
+@app.route('/clientes/<int:id_cliente>', methods=['GET'])
+def get_cliente(id_cliente):
+    cliente = Cliente.query.get(id_cliente)
+    
+    if cliente is None:
+        return jsonify({'error': 'Cliente no encontrado'}), 404
+
+    usuario = Usuario.query.get(cliente.id_usuario)
+    cliente_data = cliente.serialize()
+    cliente_data['usuario'] = {
+        'id_usuario': usuario.id_usuario,
+        'nombre': usuario.nombre,
+        'usuario_nombre': usuario.usuario_nombre,
+        'correo': usuario.correo,
+        'tipo_usuario': usuario.tipo_usuario
+    }
+
+    return jsonify(cliente_data)
+
+    
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
