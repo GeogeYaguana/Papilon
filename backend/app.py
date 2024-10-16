@@ -7,10 +7,23 @@ from flask_cors import CORS  # Importar la extensión CORS
 from flask_bcrypt import Bcrypt
 from geoalchemy2 import Geography
 from sqlalchemy import text
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import jwt_required
+from werkzeug.security import check_password_hash  # Asegúrate de usar werkzeug si usas hashing
+from datetime import timedelta
+from dotenv import load_dotenv
+from flask_jwt_extended import JWTManager, create_access_token
+import os
+
+load_dotenv()
 app = Flask(__name__)
 CORS(app)  # Habilitar CORS para todas las rutas
 
 bcrypt = Bcrypt(app)
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')  # Cargar la clave secreta desde .env
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES')))
+jwt = JWTManager(app)
+
 ##configuracion de la base de datos
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ubasg72abi62gl:pe57b2ca8503d9cbd58763ac4a87e1ae4ea39ae84c8ff769f0e87c490647e3472@c9pv5s2sq0i76o.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/ddpb2lu396gu31'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -308,6 +321,7 @@ def get_clientes():
 
     return jsonify(resultado)
 @app.route('/clientes/<int:id_cliente>', methods=['GET'])
+@jwt_required()  # Añadir este decorador para proteger la ruta
 def get_cliente(id_cliente):
     with Session(db.engine) as session:
         cliente = session.get(Cliente, id_cliente)
@@ -336,9 +350,12 @@ def login():
     usuario = Usuario.query.filter_by(usuario_nombre=usuario_nombre).first()
 
     if usuario and bcrypt.check_password_hash(usuario.password, password):
-        return jsonify({'message': 'Inicio de sesión exitoso'}), 200
+        # Crear un token JWT para el usuario
+        access_token = create_access_token(identity={'usuario_nombre': usuario.usuario_nombre})
+        return jsonify({'message': 'Inicio de sesión exitoso', 'token': access_token}), 200
     else:
         return jsonify({'error': 'Usuario o contraseña incorrectos'}), 401
+
 
 if __name__ == '__main__':
     app.run(debug=True)
