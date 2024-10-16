@@ -10,7 +10,7 @@ from sqlalchemy import text
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import jwt_required
 from werkzeug.security import check_password_hash  # Asegúrate de usar werkzeug si usas hashing
-from datetime import +
+from datetime import timedelta
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager, create_access_token
 import os
