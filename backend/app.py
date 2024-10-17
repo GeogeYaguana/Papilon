@@ -1,7 +1,7 @@
 # app.py
 from flask import Flask
 from config import Config
-from extensions import db, bcrypt, jwt
+from extensions import bcrypt, jwt, Base, engine
 from routes import register_blueprints
 from flask_cors import CORS
 import socket
@@ -16,10 +16,13 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     CORS(app, resources={r"/*": {"origins": "http://localhost:8081"}})
-    db.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
     register_blueprints(app)
+
+    # Crear las tablas en la base de datos si no existen
+    with app.app_context():
+        Base.metadata.create_all(bind=engine)
     @app.route('/')
     def home():
         return "Bienvenido al backend de papilon xd"
