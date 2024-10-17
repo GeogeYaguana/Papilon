@@ -14,11 +14,11 @@ from datetime import timedelta
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager, create_access_token
 import os
+import socket
 
 load_dotenv()
 app = Flask(__name__)
-CORS(app)  # Habilitar CORS para todas las rutas
-
+CORS(app, resources={r"/*": {"origins": "http://localhost:8081"}})
 bcrypt = Bcrypt(app)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')  # Cargar la clave secreta desde .env
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES')))
@@ -28,6 +28,12 @@ jwt = JWTManager(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ubasg72abi62gl:pe57b2ca8503d9cbd58763ac4a87e1ae4ea39ae84c8ff769f0e87c490647e3472@c9pv5s2sq0i76o.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/ddpb2lu396gu31'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db=SQLAlchemy(app);
+
+def get_local_ip():
+    """Obtiene la dirección IP local de la máquina."""
+    hostname = socket.gethostname()
+    local_ip = socket.gethostbyname(hostname)
+    return local_ip
 
 ## defino el modelo que va a parametrizar la tabla en un objeto
 tipo_usuario_enum = ENUM('local', 'cliente', name='tipo_usuario_enum', create_type=False)
@@ -340,6 +346,7 @@ def get_cliente(id_cliente):
         }
 
         return jsonify(cliente_data)
+    
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -357,5 +364,14 @@ def login():
         return jsonify({'error': 'Usuario o contraseña incorrectos'}), 401
 
 
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Obtiene la IP local
+    local_ip = get_local_ip()
+    
+    print(f" * La aplicación Flask está disponible en:\n")
+    print(f" * Local:      http://127.0.0.1:5000")
+    print(f" * Red local:  http://{local_ip}:5000\n")
+    
+    # Ejecuta Flask en todas las interfaces de red
+    app.run(host='0.0.0.0', port=5000,debug=True)
