@@ -28,6 +28,8 @@ export default App;
 import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Registration from './Registration'; // Import your registration component
 
 const LoginApp: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -54,7 +56,13 @@ const LoginApp: React.FC = () => {
     };
 
     const handleRegister = () => {
-        alert('Register button clicked! Redirect to the registration page.');
+      return (
+        <Router>
+          <Routes>
+            <Route path="/register" element={<Registration />} />
+          </Routes>
+        </Router>
+      );
     };
 
     if (loggedIn) {
