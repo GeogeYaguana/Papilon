@@ -1,29 +1,21 @@
+import React from 'react';
+
 interface InputFieldProps {
-    type: string
-    placeholder: string
-    value: string
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    required?: boolean
-  }
-  
-  export default function InputField({
-    type,
-    placeholder,
-    value,
-    onChange,
-    required = false
-  }: InputFieldProps) {
-    return (
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        required={required}
-        className="inputStyle"
-      />
-    )
-  }
-  
-  export {}
+  label: string;
+  type: string;
+  id: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const InputField: React.FC<InputFieldProps> = ({ label, type, id, value, onChange }) => {
+  return (
+    <div className="input-field">
+      <label htmlFor={id}>{label}</label>
+      <input type={type} id={id} value={value} onChange={onChange} />
+    </div>
+  );
+};
+
+export default InputField;
   

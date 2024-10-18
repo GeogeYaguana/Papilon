@@ -1,22 +1,19 @@
-import { FaGoogle, FaFacebook } from 'react-icons/fa'
+import React from 'react';
 
 interface SocialButtonProps {
-  provider: 'Google' | 'Facebook'
+  provider: 'google' | 'facebook';
+  onClick: () => void;
 }
 
-export default function SocialButton({ provider }: SocialButtonProps) {
-  const handleSocialLogin = () => {
-    console.log(`Iniciar sesión con ${provider}`)
-    // Agregar lógica de autenticación social
-  }
+const SocialButton: React.FC<SocialButtonProps> = ({ provider, onClick }) => {
+  const text = provider === 'google' ? 'Continuar con Google' : 'Continuar con Facebook';
+  const className = `social-button ${provider}`;
 
   return (
-    <button onClick={handleSocialLogin} className="socialButtonStyle">
-      {provider === 'Google' && <FaGoogle className="iconStyle" />}
-      {provider === 'Facebook' && <FaFacebook className="iconStyle" />}
-      {provider}
+    <button className={className} onClick={onClick}>
+      {text}
     </button>
-  )
-}
+  );
+};
 
-export {} 
+export default SocialButton;

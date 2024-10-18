@@ -1,15 +1,17 @@
+import React from 'react';
+
 interface ButtonProps {
-    text: string
-    type?: 'button' | 'submit' | 'reset'
-  }
-  
-  export default function Button({ text, type = 'button' }: ButtonProps) {
-    return (
-      <button type={type} className="buttonStyle">
-        {text}
-      </button>
-    )
-  }
-  
-  export {}
-  
+  type: 'button' | 'submit' | 'reset';
+  onClick?: () => void;
+  children: React.ReactNode;
+}
+
+const Button: React.FC<ButtonProps> = ({ type, onClick, children }) => {
+  return (
+    <button type={type} onClick={onClick} className="button">
+      {children}
+    </button>
+  );
+};
+
+export default Button;
