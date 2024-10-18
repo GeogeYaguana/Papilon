@@ -29,7 +29,7 @@ import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Registration from './Registration'; // Import your registration component
+import Registration from '../screens/Register/Registration'; // Import your registration component
 
 const LoginApp: React.FC = () => {
     const [username, setUsername] = useState('');

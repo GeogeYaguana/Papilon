@@ -22,5 +22,5 @@
   },
   "include": [
     "src"
-  ]
+, "screens/Register/Registration.tsx"  ]
 }
