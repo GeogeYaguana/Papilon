@@ -1,6 +1,23 @@
-/*import React from 'react';
+import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+/*import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import Registration from './screens/Register/Registration'; // Componente de registro
+import ForgotPassword from './screens/Register/ForgotPassword'; // Componente de contraseña olvidada
+
+
+const router = createBrowserRouter([
+  {
+    path: '/register',
+    element: <Registration />,
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPassword />,
+  },
+  // Puedes agregar más rutas aquí
+]);
 
 function App() {
   return (
@@ -20,89 +37,30 @@ function App() {
         </a>
       </header>
     </div>
+    
   );
 }
 
 export default App;
 */
-import React, { useState } from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Registration from './screens/Register/Registration'; // Import your registration component
 
-const LoginApp: React.FC = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [loggedIn, setLoggedIn] = useState(false);
+import LoginApp from './screens/Login/LoginScreen';
+import Registration from './screens/Register/Registration';
+import ForgotPassword from './screens/Register/ForgotPassword';
+import NotFound from './screens/NotFound/NotFound';
 
-    const handleLogin = () => {
-        if (username === 'user' && password === 'password') {
-            setLoggedIn(true);
-            alert('Login successful!');
-        } else {
-            alert('Invalid credentials. Please try again.');
-        }
-    };
-
-    const handleLogout = () => {
-        setLoggedIn(false);
-        setUsername('');
-        setPassword('');
-    };
-
-    const handleForgotPassword = () => {
-        alert('Forgot Password link clicked! Redirect to password recovery page.');
-    };
-
-    const handleRegister = () => {
-      return (
-        <Router>
-          <Routes>
-            <Route path="/register" element={<Registration />} />
-          </Routes>
-        </Router>
-      );
-    };
-
-    if (loggedIn) {
-        return (
-            <div className="App">
-                <p>Welcome, {username}!</p>
-                <button className="button" onClick={handleLogout}>Logout</button>
-            </div>
-        );
-    } else {
-        return (
-            <div className="App">
-              <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo" />
-              </header>
-                <h2 className="title">Login</h2>
-                <input
-                    type="text"
-                    className="input"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                />
-                <input
-                    type="password"
-                    className="input"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <div className="Buttons">
-                  <button className="button" onClick={handleLogin}>Ingresar</button>
-                  <button className="button register" onClick={handleRegister}>Registrarse</button>
-                </div>
-                <a href="#" className="forgot-password" onClick={handleForgotPassword}>
-                    Olvidé mi contraseña
-                </a>
-            </div>
-        );
-    }
+const App = () => {
+  return (
+    <Router>
+      <div>
+        <h1>Mi Aplicación React</h1>
+        <Routes>
+          <Route path="/" element={<LoginApp />} />
+          <Route path="/registration" element={<Registration />} />
+          <Route path="/forgotpassword" element={<ForgotPassword />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+    </Router>
+  );
 };
-
-export default LoginApp;
