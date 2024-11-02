@@ -1,0 +1,81 @@
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* Add your desired background color, padding, etc. */
+    z-index: 999; /* Ensure the header stays on top of other content */
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background-color: #f0f0f0;
+  }
+  
+  .logo {
+    width: 100px;
+    height: auto;
+    margin-right: 20px;
+  }
+  
+  .search-bar {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .language-selector, .auth-buttons {
+    margin-left: 20px;
+    background-color: #f0f0f0;
+  }
+  
+  .login-button, .register-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .auth-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Equal width columns */
+    gap: 10px; /* Adjust the gap as needed */
+  }
+  
+  .login-button {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    color: #333;
+  }
+  
+  .register-button {
+    background-color: #333;
+    color: #fff;
+  }
+
+  .searchbar {
+    position: relative; /* Use relative positioning to position child elements */
+    overflow: hidden;
+  }
+  .searchbar-icon {
+    position: absolute;
+    left: 27px;
+    top: 25px;
+    background-color: transparent;
+    color: #797979;
+    cursor: pointer;
+  }
+  input[name=search] {
+    padding: 9px;
+    padding-left: 30px;
+    border: none;
+    margin: 16px 14px;
+    font-size: 18px;
+    background-color: #e7e7e7;
+    text-align: left;
+    text-indent: 8px;
+    outline: none;
+  }
+  .searchbar , input[type=text] {
+    border-radius: 30px;
+  }
