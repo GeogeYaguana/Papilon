@@ -2,6 +2,7 @@
     position: fixed;
     top: 0;
     left: 0;
+    height: 3%;
     width: 100%;
     /* Add your desired background color, padding, etc. */
     z-index: 999; /* Ensure the header stays on top of other content */
@@ -9,6 +10,7 @@
     align-items: center;
     padding: 20px;
     background-color: #f0f0f0;
+    justify-content: space-between; /* Distribute items horizontally */
   }
   
   .logo {
@@ -23,10 +25,26 @@
     border: 1px solid #ccc;
     border-radius: 5px;
   }
-  
+
+  .content-container {
+    display: flex; /* Make the content container a flex container (optional) */
+    align-items: center; /* Align content vertically (optional) */
+    justify-content: space-between; /* Distribute items horizontally */
+    padding: 20px;
+  }
+
+  .language-selector .selector{
+    background-color: #f0f0f0;
+    appearance: none; 
+    border: none; /* Remove the default border */
+    border-radius: 5px; /* Add rounded corners */
+    padding: 10px; /* Add padding for better appearance */
+    cursor: pointer; /* Change cursor to pointer on hover */
+  }
+
+
   .language-selector, .auth-buttons {
     margin-left: 20px;
-    background-color: #f0f0f0;
   }
   
   .login-button, .register-button {
