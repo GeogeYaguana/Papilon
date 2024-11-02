@@ -2,8 +2,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  background: linear-gradient(to bottom, #f4a460, #f1f6f9);
   height: 100vh;
-  background-color: #f4a460;
 }
 
 .login-modal {
