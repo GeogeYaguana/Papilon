@@ -1,14 +1,27 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import Header from '../components/header';
 import Footer from '../components/footer';
-import { Outlet } from 'react-router-dom';
 
-const MainLayout: React.FC = () => {
+interface MainLayoutProps {
+  showSearch?: boolean;
+  showTitle?: boolean;
+  title?: string;
+  showMenu?: boolean;
+  children?: ReactNode;  // Hacer children opcional
+}
+
+const MainLayout: React.FC<MainLayoutProps> = ({ 
+  showSearch = false, 
+  showTitle = true, 
+  title = "My Website", 
+  showMenu = true, 
+  children 
+}) => {
   return (
     <div>
-      <Header />
+      <Header showSearch={showSearch} showTitle={showTitle} title={title} showMenu={showMenu} />
       <main>
-        <Outlet /> {/* Renderiza el componente de la ruta activa */}
+        {children} {/* Renderiza el componente hijo si está presente */}
       </main>
       <Footer />
     </div>
@@ -16,3 +29,4 @@ const MainLayout: React.FC = () => {
 };
 
 export default MainLayout;
+

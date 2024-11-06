@@ -1,0 +1,24 @@
+.container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(to Bottom, var(--primary-color) 50%, var(--secondary-color));
+    text-align: center;
+  }
+  
+  .logo-home {
+    width: 200px;
+    height: auto;
+    margin-bottom: 2rem;
+  }
+  
+  .description {
+    max-width: 600px;
+    margin: 2rem 0;
+    color: white;
+    font-size: 1.25rem;
+    line-height: 1.6;
+  }
