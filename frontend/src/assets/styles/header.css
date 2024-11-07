@@ -61,6 +61,45 @@
     border-radius: 4px;
     text-decoration: none;
   }
+
+  .button-header {
+    width: 100px;
+    background-color: black;
+    border: none;
+    padding: 10px;
+    margin-right: 15px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 10px;
+    transition: background-color 0.3s;;
+    text-decoration: none;
+  }
+
+  .button-header:hover{
+    background-color: #333; 
+  }
+
+  .btn-container .button-header.login {
+    background-color: rgb(255, 255, 255);
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid black;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+/*.btn-container .button-header.login:hover {
+    background-color: #333; 
+}*/
+
+.btn-container .button-header.login .btn-link{
+  color: black;
+}
+  .btn-link{
+    text-decoration: none;
+    color: white;
+  }
   
   .menu-toggle {
     font-size: 1.2em;

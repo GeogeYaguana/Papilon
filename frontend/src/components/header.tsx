@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../assets/images/LOGO_PAPILON HORIZONTAL.png';
+import Button from '../components/button';
 
 import '../assets/styles/header.css';
 
@@ -35,7 +36,6 @@ const Header: React.FC<HeaderProps> = ({ showSearch = false, showTitle = false, 
             <Link to="/">Home</Link>
             <Link to="/profile">Profile</Link>
             <Link to="/settings">Settings</Link>
-            {/* Puedes agregar más enlaces aquí */}
           </nav>
         )}
 
@@ -49,8 +49,12 @@ const Header: React.FC<HeaderProps> = ({ showSearch = false, showTitle = false, 
         </div>
       )}
         <div className='btn-container'>
-        <Link to="/login" className="btn">Ingresar</Link>
-        <Link to="/register" className="btn">Registrarse</Link>
+        <Button type="button" className="header login"> 
+        <Link to="/login" className="btn-link">Ingresar</Link>
+        </Button>
+        <Button type="button" className="header"> 
+        <Link to="/register" className="btn-link">Registrarse</Link>
+        </Button>
         </div>
         
       </div>

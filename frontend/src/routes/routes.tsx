@@ -9,10 +9,10 @@ const routes = [
     element: <Login />,
   },
   {
-    path: "/home",
+    path: "",
     element: (
       <MainLayout showSearch={false} showTitle={false} showMenu={false} title="Inicio">
-        <Home /> {/* Pasa Home como children de MainLayout */}
+        <Home />
       </MainLayout>
     ),
   },
@@ -20,7 +20,6 @@ const routes = [
     path: "/profile",
     element: (
       <MainLayout showSearch={false} showTitle={true} title="Perfil">
-        {/* Otro componente puede ir aquí como children */}
       </MainLayout>
     ),
   },

@@ -21,4 +21,26 @@
     color: white;
     font-size: 1.25rem;
     line-height: 1.6;
+    text-align: justify;
+  }
+
+  .button-home {
+    width: 250px;
+    background-color: black;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 25px;
+    border-radius: 25px;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+  }
+  .btn-link{
+    text-decoration: none;
+    color: white;
+  }
+   
+  
+  .button-home:hover {
+    background-color: #333;
   }
