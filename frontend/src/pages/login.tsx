@@ -3,6 +3,7 @@ import InputField from '../components/inputField';
 import Button from '../components/button';
 import SocialButton from '../components/socialButton';
 import Logo from '../assets/images/LOGO_PAPILON VERTICAL.png'
+import { Link } from 'react-router-dom';
 import '../assets/styles/login.css';
 
 const Login: React.FC = () => {
@@ -27,7 +28,7 @@ const Login: React.FC = () => {
       <SocialButton provider="facebook" onClick={() => handleSocialLogin('facebook')} />
       <div className="separator">OR</div>
       <InputField
-        label="Usuario o identificación"
+        label="Correo electronico"
         type="text"
         id="username"
         value={username}
@@ -40,8 +41,9 @@ const Login: React.FC = () => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <a href="#" className="forgot-password">Olvidé mi contraseña</a>
+      <Link to="/" className='forgot-password'>Olvidé mi contraseña</Link>
       <Button type="submit">Iniciar Sesión</Button>
+      <Link to="/register" className='forgot-password'>¿Ya estas registrado?</Link>
     </form>
   );
 };

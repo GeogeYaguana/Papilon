@@ -10,9 +10,10 @@ interface HeaderProps {
   showTitle?: boolean;
   title?: string;
   showMenu?: boolean;
+  showButton?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ showSearch = false, showTitle = false, title = "My Website", showMenu = true }) => {
+const Header: React.FC<HeaderProps> = ({ showSearch = false, showTitle = false, title = "My Website", showMenu = true, showButton = true }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -48,14 +49,14 @@ const Header: React.FC<HeaderProps> = ({ showSearch = false, showTitle = false, 
           <input type="text" placeholder="Buscar..." className="search-input" />
         </div>
       )}
-        <div className='btn-container'>
+        {showButton && (<div className='btn-container'>
         <Button type="button" className="header login"> 
         <Link to="/login" className="btn-link">Ingresar</Link>
         </Button>
         <Button type="button" className="header"> 
         <Link to="/register" className="btn-link">Registrarse</Link>
         </Button>
-        </div>
+        </div>)}
         
       </div>
     </header>
