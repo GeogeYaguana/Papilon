@@ -14,12 +14,12 @@ def login():
 
     with get_session() as session:
         usuario = session.query(Usuario).filter_by(usuario_nombre=usuario_nombre).first()
-
         if usuario and bcrypt.check_password_hash(usuario.password, password):
             access_token = create_access_token(identity={'usuario_nombre': usuario.usuario_nombre})
-            cliente = session.query(Cliente).filter_by(id_usuario=usuario.id_usuario).first()
-            usuario_data = usuario.serialize()
-            cliente_data = cliente.serialize() if cliente else {}
-            return jsonify({'message': 'Inicio de sesión exitoso', 'token': access_token ,'usuario' : usuario_data , 'cliente' :cliente_data}), 200
+            return jsonify({'message': 'Inicio de sesión exitoso',
+                             'token': access_token ,
+                             'id_usuario' : usuario.id_usuario,
+                             'tipo_usuario': usuario.tipo_usuario
+                               }), 200
         else:
             return jsonify({'error': 'Usuario o contraseña incorrectos'}), 401
