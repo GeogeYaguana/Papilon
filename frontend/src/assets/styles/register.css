@@ -1,0 +1,105 @@
+.register-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px;
+    max-width: 400px;
+    margin: 0 auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+  }
+  
+  .register-logo {
+        width: 150px;         
+        height: auto;         
+        margin-bottom: 30px; 
+      }
+  
+  /*botones sociales */
+  .social-button {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  
+  .social-button.google {
+    background-color: #db4437;
+    color: white;
+  }
+  
+  .social-button.facebook {
+    background-color: #3b5998;
+    color: white;
+  }
+  
+  .separator {
+    margin: 15px 0;
+    text-align: center;
+    color: #666;
+  }
+  
+  
+  .input-field {
+    width:100%;
+    margin: 0px 10px 0px 10px ;
+    padding-right: 10px;
+    
+  }
+  
+  .input-field label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0px;
+
+  }
+  
+  .input {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .forgot-password {
+    color: #007bff;
+    text-decoration: none;
+    margin: 10px 0;
+  }
+  
+  .forgot-password:hover {
+    text-decoration: underline;
+  }
+  
+  Button {
+    width: 95%;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #666666;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .button:hover {
+    background-color: #45a049;
+  }
+.inputs-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 115%;
+    padding-top: 5px;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+  }

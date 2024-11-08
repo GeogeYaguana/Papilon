@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import Usuario
+from models import Cliente, Usuario
 from extensions import bcrypt, jwt, get_session
 from flask_jwt_extended import create_access_token
 from sqlalchemy.exc import SQLAlchemyError
@@ -14,9 +14,12 @@ def login():
 
     with get_session() as session:
         usuario = session.query(Usuario).filter_by(usuario_nombre=usuario_nombre).first()
-
         if usuario and bcrypt.check_password_hash(usuario.password, password):
             access_token = create_access_token(identity={'usuario_nombre': usuario.usuario_nombre})
-            return jsonify({'message': 'Inicio de sesión exitoso', 'token': access_token}), 200
+            return jsonify({'message': 'Inicio de sesión exitoso',
+                             'token': access_token ,
+                             'id_usuario' : usuario.id_usuario,
+                             'tipo_usuario': usuario.tipo_usuario
+                               }), 200
         else:
             return jsonify({'error': 'Usuario o contraseña incorrectos'}), 401
