@@ -1,12 +1,11 @@
 # extensions.py
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.ext.declarative import declarative_base
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from config import Config
 from contextlib import contextmanager
-
+from sqlalchemy.orm import declarative_base
 bcrypt = Bcrypt()
 jwt = JWTManager()
 

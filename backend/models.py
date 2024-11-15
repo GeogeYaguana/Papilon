@@ -1,10 +1,11 @@
 # models.py
+from sqlalchemy import types  # Esto importa el módulo 'types' de SQLAlchemy
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Numeric
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.sql import func
 from geoalchemy2 import Geography
 from extensions import Base
-
+import sqlalchemy as sa
 tipo_usuario_enum = ENUM('local', 'cliente', name='tipo_usuario_enum', create_type=False)
 
 class Usuario(Base):
@@ -30,7 +31,12 @@ class Usuario(Base):
             'telefono': self.telefono,
             'fecha_registro': self.fecha_registro.strftime("%Y-%m-%d %H:%M:%S") if self.fecha_registro else None
         }
-
+class Geometry(types.UserDefinedType):
+    def get_col_spec(self, **kw):
+        if sa.inspect(self.bind).dialect.name == 'sqlite':
+            return "BLOB"  # SQLite does not support geometry, use BLOB or TEXT
+        else:
+            return "GEOGRAPHY(POINT,4326)"
 class Local(Base):
     __tablename__ = 'local'
     id_local = Column(Integer, primary_key=True)

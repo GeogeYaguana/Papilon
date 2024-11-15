@@ -39,7 +39,7 @@ def create_usuario():
     except SQLAlchemyError as e:
         return jsonify({'error': str(e)}), 400
 
-@usuario_bp.route('/usuario', methods=['GET'])
+@usuario_bp.route('/usuarios', methods=['GET'])
 def get_usuarios():
     with get_session() as session:
         usuarios = session.query(Usuario).all()
