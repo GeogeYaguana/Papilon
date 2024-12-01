@@ -10,25 +10,24 @@ import '../assets/styles/login.css';
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null); // Estado para manejar errores
-  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Estado para el mensaje de éxito
-  const navigate = useNavigate(); // Para redirigir al usuario después del login
+  const [error, setError] = useState<string | null>(null); 
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null); // Reinicia el estado de error
-    setSuccessMessage(null); // Reinicia el mensaje de éxito
+    setError(null); 
+    setSuccessMessage(null); 
 
     try {
-      const { token, message } = await login(username, password); // Llama al servicio de login
-      localStorage.setItem('token', token); // Guarda el token en localStorage
-      setSuccessMessage(message); // Muestra el mensaje de éxito
+      const { token, message } = await login(username, password); 
+      localStorage.setItem('token', token); 
+      setSuccessMessage(message); 
       console.log('Inicio de sesión exitoso');
-      
-      // Redirige al usuario después de 2 segundos para mostrar el mensaje
       setTimeout(() => {
-        navigate('/');
+        navigate('/dashboard');
       }, 2000);
+
     } catch (err) {
       console.error('Error al iniciar sesión:', err);
       setError('Usuario o contraseña incorrectos.');
@@ -59,9 +58,8 @@ const Login: React.FC = () => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      {/* Muestra el error si ocurre */}
+      
       {error && <p className="error-message">{error}</p>}
-      {/* Muestra el mensaje de éxito */}
       {successMessage && <p className="success-message">{successMessage}</p>}
       <Link to="/" className="forgot-password">Olvidé mi contraseña</Link>
       <Button type="submit">Iniciar Sesión</Button>

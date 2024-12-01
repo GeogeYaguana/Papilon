@@ -3,7 +3,8 @@ import InputField from '../components/inputField';
 import Button from '../components/button';
 import SocialButton from '../components/socialButton';
 import Logo from '../assets/images/LOGO_PAPILON VERTICAL.png';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
+import { register } from '../services/registerService';
 import '../assets/styles/register.css';
 
 const Register: React.FC = () => {
@@ -14,13 +15,13 @@ const Register: React.FC = () => {
   const [category, setCategory] = useState('');
   const [ruc, setRuc] = useState('');
   const [passwordError, setPasswordError] = useState('');
-
-  // Función para manejar la validación
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const confirmPasswordValue = e.target.value;
     setConfirmPassword(confirmPasswordValue);
 
-    // Compara las contraseñas
     if (confirmPasswordValue !== password) {
       setPasswordError('Las contraseñas no coinciden');
     } else {
@@ -28,18 +29,38 @@ const Register: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Si hay un error, no enviamos el formulario
     if (password !== confirmPassword) {
       setPasswordError('Las contraseñas no coinciden');
       return;
     }
 
-    // validacion registramos al usuario
     setPasswordError('');
-    console.log('Register submitted', { username, password, location, category, ruc });
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await register({
+        nombre: username,
+        usuario_nombre: username,
+        password,
+        correo: `${username}@example.com`,
+        tipo_usuario: category || 'local', 
+        url_imagen: '',
+        telefono: location, 
+      });
+      setSuccessMessage(response.message);
+      console.log('Registro exitoso:', response.message);
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
+    } catch (error: unknown) {
+      const err = error as Error; 
+      setError(err.message || 'Error desconocido al registrar el usuario.');
+      console.error('Error al registrar:', err);
+    }
   };
 
   const handleSocialLogin = (provider: 'google' | 'facebook') => {
@@ -49,32 +70,27 @@ const Register: React.FC = () => {
   return (
     <form onSubmit={handleSubmit} className="register-form">
       <img src={Logo} alt="Logo" className="register-logo" />
-      
-      {/* Botones de login social */}
       <SocialButton provider="google" onClick={() => handleSocialLogin('google')} />
       <SocialButton provider="facebook" onClick={() => handleSocialLogin('facebook')} />
-      
       <div className="separator">OR</div>
-
-      <div className='inputs-container'>
+      <div className="inputs-container">
         <InputField
           label="Correo electronico"
           type="text"
           id="username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-
         />
         <InputField
-        label="RUC"
-        type="text"
-        id="ruc"
-        value={ruc}
-        onChange={(e) => setRuc(e.target.value)}
-      />
+          label="RUC"
+          type="text"
+          id="ruc"
+          value={ruc}
+          onChange={(e) => setRuc(e.target.value)}
+        />
       </div>
-      <div className='inputs-container'>
-      <InputField
+      <div className="inputs-container">
+        <InputField
           label="Contraseña"
           type="password"
           id="password"
@@ -89,8 +105,7 @@ const Register: React.FC = () => {
           onChange={handleConfirmPasswordChange}
         />
       </div>
-      
-      <div className='inputs-container'>
+      <div className="inputs-container">
         <InputField
           label="Ubicación"
           type="text"
@@ -106,12 +121,11 @@ const Register: React.FC = () => {
           onChange={(e) => setCategory(e.target.value)}
         />
       </div>
-
-      
       {passwordError && <p className="error">{passwordError}</p>}
-      
+      {error && <p className="error">{error}</p>}
+      {successMessage && <p className="success-message">{successMessage}</p>}
       <Button type="submit">Registrar</Button>
-      <Link to="/login" className='forgot-password'>¿Ya estas registrado?</Link>
+      <Link to="/login" className="forgot-password">¿Ya estás registrado?</Link>
     </form>
   );
 };
