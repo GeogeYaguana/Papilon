@@ -8,6 +8,7 @@ from flask_jwt_extended import jwt_required
 local_bp = Blueprint('local_bp', __name__)
 
 @local_bp.route('/locales', methods=['GET'])
+@jwt_required()
 def get_locales():
     with get_session() as session:
         locales = session.query(Local).all()

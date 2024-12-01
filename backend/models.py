@@ -70,3 +70,18 @@ class Cliente(Base):
             'id_usuario': self.id_usuario,
             'puntos': self.puntos
         }
+    
+class Categoria(Base):
+    __tablename__ = 'categoria'
+    id_categoria = Column(Integer, primary_key=True)
+    nombre = Column(String(100), nullable=False)
+    descripcion = Column(Text, nullable=True)
+    url_img = Column(Text, nullable=True)
+
+    def serialize(self):
+        return {
+            'id_categoria': self.id_categoria,
+            'nombre': self.nombre,
+            'descripcion': self.descripcion,
+            'url_img': self.url_img
+        }
