@@ -1,10 +1,12 @@
 # models.py
 from sqlalchemy import types  # Esto importa el módulo 'types' de SQLAlchemy
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Numeric
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Numeric, Boolean
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.sql import func
 from geoalchemy2 import Geography
 from extensions import Base
+from datetime import datetime
+from sqlalchemy.orm import relationship
 import sqlalchemy as sa
 tipo_usuario_enum = ENUM('local', 'cliente', name='tipo_usuario_enum', create_type=False)
 
@@ -91,3 +93,44 @@ class Categoria(Base):
             'descripcion': self.descripcion,
             'url_img': self.url_img
         }
+    
+class Producto(Base):
+    __tablename__ = 'producto'
+    
+    id_producto = Column(Integer, primary_key=True)
+    nombre = Column(String(150), nullable=False)
+    descripcion = Column(Text, nullable=True)
+    precio = Column(Numeric(10, 2), nullable=False)
+    puntos_necesario = Column(Integer, nullable=False)
+    foto_url = Column(Text, nullable=True)
+    disponibilidad = Column(Boolean, default=True)
+    descuento = Column(Numeric(5, 2), nullable=True)
+    fecha_registro = Column(DateTime, default=datetime.utcnow)
+    
+    id_local = Column(Integer, ForeignKey('local.id_local', ondelete='CASCADE'), nullable=False)
+    id_categoria = Column(Integer, ForeignKey('categoria.id_categoria', ondelete='CASCADE'), nullable=False)
+
+    # Relación con Local
+    local = relationship('Local', back_populates='productos')
+
+    # Relación con Categoria
+    categoria = relationship('Categoria', back_populates='productos')
+
+    def serialize(self):
+        return {
+            'id_producto': self.id_producto,
+            'nombre': self.nombre,
+            'descripcion': self.descripcion,
+            'precio': str(self.precio),
+            'puntos_necesario': self.puntos_necesario,
+            'foto_url': self.foto_url,
+            'disponibilidad': self.disponibilidad,
+            'descuento': str(self.descuento) if self.descuento else None,
+            'fecha_registro': self.fecha_registro.strftime("%Y-%m-%d %H:%M:%S") if self.fecha_registro else None,
+            'id_local': self.id_local,
+            'id_categoria': self.id_categoria
+        }
+
+# Relaciones inversas en Local y Categoria
+Local.productos = relationship('Producto', back_populates='local')
+Categoria.productos = relationship('Producto', back_populates='categoria')
