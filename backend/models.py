@@ -105,7 +105,7 @@ class Producto(Base):
     foto_url = Column(Text, nullable=True)
     disponibilidad = Column(Boolean, default=True)
     descuento = Column(Numeric(5, 2), nullable=True)
-    fecha_registro = Column(DateTime, default=datetime.utcnow)
+    fecha_creacion = Column(DateTime, default=datetime.utcnow)  # Cambiar fecha_registro a fecha_creacion
     
     id_local = Column(Integer, ForeignKey('local.id_local', ondelete='CASCADE'), nullable=False)
     id_categoria = Column(Integer, ForeignKey('categoria.id_categoria', ondelete='CASCADE'), nullable=False)
@@ -126,7 +126,7 @@ class Producto(Base):
             'foto_url': self.foto_url,
             'disponibilidad': self.disponibilidad,
             'descuento': str(self.descuento) if self.descuento else None,
-            'fecha_registro': self.fecha_registro.strftime("%Y-%m-%d %H:%M:%S") if self.fecha_registro else None,
+            'fecha_creacion': self.fecha_creacion.strftime("%Y-%m-%d %H:%M:%S") if self.fecha_creacion else None, 
             'id_local': self.id_local,
             'id_categoria': self.id_categoria
         }
