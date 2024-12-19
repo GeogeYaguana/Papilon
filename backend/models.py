@@ -1,6 +1,6 @@
 # models.py
 from sqlalchemy import types  # Esto importa el módulo 'types' de SQLAlchemy
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Numeric, Boolean
+from sqlalchemy import Column, Integer, String, Text,Float, ForeignKey, DateTime, Numeric, Boolean
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.sql import func
 from geoalchemy2 import Geography
@@ -9,6 +9,7 @@ from datetime import datetime
 from sqlalchemy.orm import relationship
 import sqlalchemy as sa
 tipo_usuario_enum = ENUM('local', 'cliente', name='tipo_usuario_enum', create_type=False)
+
 
 class Usuario(Base):
     __tablename__ = 'usuario'
@@ -134,3 +135,70 @@ class Producto(Base):
 # Relaciones inversas en Local y Categoria
 Local.productos = relationship('Producto', back_populates='local')
 Categoria.productos = relationship('Producto', back_populates='categoria')
+
+
+class Factura(Base):
+    __tablename__ = 'facturas'
+
+    id_factura = Column(Integer, primary_key=True, autoincrement=True)
+    id_local = Column(Integer, ForeignKey('locales.id_local'), nullable=False)
+    id_cliente = Column(Integer, ForeignKey('clientes.id_cliente'), nullable=False)
+    total = Column(Float, nullable=False, default=0.0)
+    estado = Column(String(20), nullable=False, default='pendiente')
+
+    local = relationship('Local', back_populates='facturas')
+    cliente = relationship('Cliente', back_populates='facturas')
+    #detalles = relationship('DetalleFactura', back_populates='factura', cascade='all, delete-orphan')
+
+    def serialize(self):
+        return {
+            'id_factura': self.id_factura,
+            'id_local': self.id_local,
+            'id_cliente': self.id_cliente,
+            'total': self.total,
+            'estado': self.estado,
+            'detalles': [detalle.serialize() for detalle in self.detalles]
+        }
+
+'''
+class DetalleFactura(Base):
+    __tablename__ = 'detalles_factura'
+
+    id_detalle_factura = Column(Integer, primary_key=True, autoincrement=True)
+    id_factura = Column(Integer, ForeignKey('facturas.id_factura'), nullable=False)
+    id_producto = Column(Integer, ForeignKey('productos.id_producto'), nullable=False)
+    precio_unitario = Column(Float, nullable=False)
+    cantidad = Column(Integer, nullable=False)
+
+    factura = relationship('Factura', back_populates='detalles')
+    producto = relationship('Producto', back_populates='detalles_factura')
+
+    def serialize(self):
+        return {
+            'id_detalle_factura': self.id_detalle_factura,
+            'id_factura': self.id_factura,
+            'id_producto': self.id_producto,
+            'precio_unitario': self.precio_unitario,
+            'cantidad': self.cantidad
+        }
+
+class Canje(Base):
+    __tablename__ = 'canjes'
+
+    id_canje = Column(Integer, primary_key=True, autoincrement=True)
+    id_cliente = Column(Integer, ForeignKey('clientes.id_cliente'), nullable=False)
+    id_local = Column(Integer, ForeignKey('locales.id_local'), nullable=False)
+    puntos_utilizados = Column(Integer, nullable=False)
+    estado = Column(String(20), nullable=False, default='pendiente')
+
+    cliente = relationship('Cliente', back_populates='canjes')
+    local = relationship('Local', back_populates='canjes')
+
+    def serialize(self):
+        return {
+            'id_canje': self.id_canje,
+            'id_cliente': self.id_cliente,
+            'id_local': self.id_local,
+            'puntos_utilizados': self.puntos_utilizados,
+            'estado': self.estado
+        }'''
