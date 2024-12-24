@@ -2,7 +2,7 @@
 
 from flask import Blueprint, jsonify, request
 from extensions import get_session
-from models import Producto, Categoria, Local
+from models import Producto, Categoria, Local , Usuario
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required
 
@@ -10,7 +10,6 @@ producto_bp = Blueprint('producto_bp', __name__)
 
 # Ruta para obtener todos los productos
 @producto_bp.route('/productos', methods=['GET'])
-@jwt_required()
 def get_productos():
     try:
         with get_session() as session:
@@ -22,7 +21,6 @@ def get_productos():
 
 # Ruta para obtener un producto específico por ID
 @producto_bp.route('/producto/<int:id_producto>', methods=['GET'])
-@jwt_required()
 def get_producto(id_producto):
     try:
         with get_session() as session:
@@ -35,7 +33,6 @@ def get_producto(id_producto):
 
 # Ruta para crear un nuevo producto
 @producto_bp.route('/producto', methods=['POST'])
-@jwt_required()
 def create_producto():
     data = request.get_json()
     
@@ -89,7 +86,6 @@ def create_producto():
 
 # Ruta para actualizar un producto existente
 @producto_bp.route('/producto/<int:id_producto>', methods=['PUT'])
-@jwt_required()
 def update_producto(id_producto):
     data = request.get_json()
     
@@ -156,7 +152,6 @@ def update_producto(id_producto):
 
 # Ruta para eliminar un producto
 @producto_bp.route('/producto/<int:id_producto>', methods=['DELETE'])
-@jwt_required()
 def delete_producto(id_producto):
     try:
         with get_session() as session:
@@ -187,5 +182,44 @@ def get_productos_por_local(id_local):
 
             resultado = [producto.serialize() for producto in productos]
             return jsonify(resultado), 200
+    except SQLAlchemyError as e:
+        return jsonify({'error': str(e)}), 500
+
+@producto_bp.route('/productos/usuario/<int:id_usuario>', methods=['GET'])
+def get_productos_por_usuario(id_usuario):
+    """
+    Obtiene los productos de un 'local' a partir del id_usuario.
+    1. Verifica que el usuario existe y que sea tipo 'local'.
+    2. Obtiene el id_local asociado al usuario.
+    3. Retorna todos los productos correspondientes a ese id_local.
+    """
+    try:
+        with get_session() as session:
+            # 1. Verificar que el usuario existe
+            usuario = session.query(Usuario).get(id_usuario)
+            if not usuario:
+                return jsonify({'error': 'Usuario no encontrado'}), 404
+
+            # 2. Verificar que sea un usuario de tipo local (ajusta según tu lógica)
+            if usuario.tipo_usuario != 'local':
+                return jsonify({'error': 'Usuario no es de tipo local'}), 403
+
+            # 3. Obtener el id_local asociado al usuario
+            #    Suponiendo que en tu tabla "Local" hay un campo "id_usuario" que indica el dueño
+            local = session.query(Local).filter_by(id_usuario=id_usuario).first()
+            if not local:
+                return jsonify({'error': 'No se encontró un registro Local para este usuario'}), 404
+
+            id_local = local.id_local  # Ajusta el nombre del campo
+
+            # 4. Obtener los productos de ese local
+            productos = session.query(Producto).filter_by(id_local=id_local).all()
+            if not productos:
+                return jsonify({'message': 'No se encontraron productos para este local'}), 404
+
+            # 5. Serializar y retornar
+            resultado = [producto.serialize() for producto in productos]
+            return jsonify(resultado), 200
+
     except SQLAlchemyError as e:
         return jsonify({'error': str(e)}), 500

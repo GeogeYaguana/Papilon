@@ -29,7 +29,6 @@ def get_locales():
         return jsonify(resultado), 200
 
 @local_bp.route('/locales', methods=['POST'])
-@jwt_required()
 def create_local():
     data = request.get_json()
     nombre_local = data.get('nombre_local')
