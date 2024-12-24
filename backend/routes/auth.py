@@ -27,6 +27,27 @@ def login():
             }), 200
         else:
             return jsonify({'error': 'Usuario o contraseña incorrectos'}), 401
+@auth_bp.route('/login_local', methods=['POST'])
+def login_local():
+    data = request.get_json()
+    usuario_nombre = data.get('usuario_nombre')
+    password = data.get('password')
+
+    with get_session() as session:
+        usuario = session.query(Usuario).filter_by(usuario_nombre=usuario_nombre).first()
+        if usuario and bcrypt.check_password_hash(usuario.password, password):
+            if usuario.tipo_usuario != 'local':
+                return jsonify({'error': 'Acceso restringido a usuarios locales'}), 403  # Forbidden
+            access_token = create_access_token(identity=usuario.id_usuario)
+            return jsonify({
+                'message': 'Inicio de sesión exitoso para usuario local',
+                'token': access_token,
+                'id_usuario': usuario.id_usuario,
+                'tipo_usuario': usuario.tipo_usuario
+            }), 200
+        else:
+            return jsonify({'error': 'Usuario o contraseña incorrectos'}), 401
+
 @auth_bp.route('/get_cliente', methods=['GET'])
 def get_cliente():
     id_usuario = request.args.get('id_usuario', type=int)

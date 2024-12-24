@@ -15,7 +15,7 @@ def get_local_ip():
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    CORS(app, resources={r"/*": {"origins": ["http://localhost:8081","http://localhost:3000","http://localhost:5000"]}})
+    CORS(app, resources={r"/*": {"origins": ["http://localhost:8081","http://localhost:3000","http://localhost:5000","http://localhost:5173"]}})
     bcrypt.init_app(app)
     jwt.init_app(app)
     register_blueprints(app)

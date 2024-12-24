@@ -5,8 +5,10 @@ def register_blueprints(app):
     from .local import local_bp
     from .cliente import cliente_bp
     from .categoria import categoria_bp  
+    from .producto import producto_bp  # Importa el Blueprint de Producto
     app.register_blueprint(auth_bp)
     app.register_blueprint(usuario_bp)
     app.register_blueprint(local_bp)
     app.register_blueprint(cliente_bp)
     app.register_blueprint(categoria_bp) 
+    app.register_blueprint(producto_bp)  # Registra el Blueprint de Producto

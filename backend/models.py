@@ -91,3 +91,36 @@ class Categoria(Base):
             'descripcion': self.descripcion,
             'url_img': self.url_img
         }
+class Producto(Base):
+    __tablename__ = 'producto'
+
+    id_producto = Column(Integer, primary_key=True)
+    id_categoria = Column(Integer, ForeignKey('categoria.id_categoria', ondelete='SET NULL'), nullable=True)
+    id_local = Column(Integer, ForeignKey('local.id_local', ondelete='CASCADE'), nullable=False)
+    nombre = Column(String(150), nullable=False)
+    descripcion = Column(Text, nullable=True)
+    precio = Column(Numeric(10, 2), nullable=False)  # Precio con dos decimales
+    puntos_necesario = Column(Integer, nullable=True)  # Puede ser NULL
+    foto_url = Column(Text, nullable=True)
+    disponibilidad = Column(sa.Boolean, default=True)  # TRUE indica disponible
+    descuento = Column(Numeric(5, 2), nullable=True)  # Descuento opcional
+    fecha_creacion = Column(DateTime, default=func.current_timestamp())
+
+    # Relaciones
+    categoria = sa.orm.relationship('Categoria', backref='productos', lazy='joined')
+    local = sa.orm.relationship('Local', backref='productos', lazy='joined')
+
+    def serialize(self):
+        return {
+            'id_producto': self.id_producto,
+            'id_categoria': self.id_categoria,
+            'id_local': self.id_local,
+            'nombre': self.nombre,
+            'descripcion': self.descripcion,
+            'precio': str(self.precio),
+            'puntos_necesario': self.puntos_necesario,
+            'foto_url': self.foto_url,
+            'disponibilidad': self.disponibilidad,
+            'descuento': str(self.descuento),
+            'fecha_creacion': self.fecha_creacion.strftime("%Y-%m-%d %H:%M:%S") if self.fecha_creacion else None
+        }
