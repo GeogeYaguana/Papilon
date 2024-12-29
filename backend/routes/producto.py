@@ -2,9 +2,11 @@
 
 from flask import Blueprint, jsonify, request
 from extensions import get_session
-from models import Producto, Categoria, Local , Usuario
+from models import DetalleCanje, Producto, Categoria, Local , Usuario
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required
+import sqlalchemy as sa
+
 
 producto_bp = Blueprint('producto_bp', __name__)
 
@@ -186,6 +188,7 @@ def get_productos_por_local(id_local):
         return jsonify({'error': str(e)}), 500
 
 @producto_bp.route('/productos/usuario/<int:id_usuario>', methods=['GET'])
+@jwt_required()
 def get_productos_por_usuario(id_usuario):
     """
     Obtiene los productos de un 'local' a partir del id_usuario.
@@ -219,6 +222,50 @@ def get_productos_por_usuario(id_usuario):
 
             # 5. Serializar y retornar
             resultado = [producto.serialize() for producto in productos]
+            return jsonify(resultado), 200
+
+    except SQLAlchemyError as e:
+        return jsonify({'error': str(e)}), 500
+@producto_bp.route('/productos/top-canjes', methods=['GET'])
+def get_top_canjes():
+    """
+    Devuelve los 3 productos con más canjes, incluyendo su URL de imagen y descripción.
+    """
+    try:
+        with get_session() as session:
+            # Consulta para contar los canjes por producto y obtener detalles adicionales
+            top_productos = (
+                session.query(
+                    Producto.id_producto,
+                    Producto.nombre,
+                    Producto.foto_url,
+                    Producto.descripcion,
+                    sa.func.count(DetalleCanje.id_detalle_canje).label('total_canjes')
+                )
+                .join(DetalleCanje, Producto.id_producto == DetalleCanje.id_producto)
+                .group_by(
+                    Producto.id_producto,
+                    Producto.nombre,
+                    Producto.foto_url,
+                    Producto.descripcion
+                )
+                .order_by(sa.desc('total_canjes'))
+                .limit(3)
+                .all()
+            )
+
+            # Serializar los resultados
+            resultado = [
+                {
+                    'id_producto': producto.id_producto,
+                    'nombre': producto.nombre,
+                    'descripcion': producto.descripcion,
+                    'foto_url': producto.foto_url,
+                    'total_canjes': producto.total_canjes
+                }
+                for producto in top_productos
+            ]
+
             return jsonify(resultado), 200
 
     except SQLAlchemyError as e:

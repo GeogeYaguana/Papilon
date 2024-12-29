@@ -3,7 +3,11 @@ from flask import Blueprint, request, jsonify
 from models import Usuario
 from extensions import bcrypt, get_session
 from sqlalchemy.exc import SQLAlchemyError
-
+import random
+import string
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 usuario_bp = Blueprint('usuario_bp', __name__)
 
 @usuario_bp.route('/usuario', methods=['POST'])
@@ -90,3 +94,82 @@ def delete_usuario(id):
         except SQLAlchemyError as e:
             session.rollback()
             return jsonify({'error': str(e)}), 400
+
+def send_email(to_email, subject, message):
+    try:
+        # Configuración del servidor SMTP
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        sender_email = "sesyaguana@gmail.com"  # Reemplaza con tu correo
+        sender_password = "tu_contraseña"  # Reemplaza con tu contraseña o utiliza un token de aplicación
+
+        # Crear el mensaje de correo
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = to_email
+        msg['Subject'] = subject
+
+        # Agregar el contenido del mensaje
+        msg.attach(MIMEText(message, 'plain'))
+
+        # Conectar al servidor SMTP y enviar el correo
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()  # Inicia cifrado TLS
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+    except Exception as e:
+        print(f"Error al enviar el correo: {e}")
+
+@usuario_bp.route('/usuario/recuperar-contrasena', methods=['POST'])
+def solicitar_recuperacion_contrasena():
+    data = request.get_json()
+    correo = data.get('correo')
+
+    if not correo:
+        return jsonify({'error': 'Correo electrónico es obligatorio'}), 400
+
+    try:
+        with get_session() as session:
+            usuario = session.query(Usuario).filter_by(correo=correo).first()
+            if not usuario:
+                return jsonify({'error': 'No se encontró un usuario con ese correo'}), 404
+
+            # Generar código temporal o nueva contraseña
+            nueva_contrasena = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+            hashed_password = bcrypt.generate_password_hash(nueva_contrasena).decode('utf-8')
+
+            # Actualizar contraseña en la base de datos
+            usuario.password = hashed_password
+            session.commit()
+
+            # Enviar correo con la nueva contraseña
+            mensaje = f"Hola {usuario.nombre},\n\nTu nueva contraseña es: {nueva_contrasena}\nPor favor, cámbiala después de iniciar sesión."
+            send_email(correo, "Recuperación de Contraseña", mensaje)
+
+            return jsonify({'message': 'Se ha enviado un correo con la nueva contraseña'}), 200
+    except SQLAlchemyError as e:
+        return jsonify({'error': str(e)}), 500
+
+@usuario_bp.route('/usuario/cambiar-contrasena', methods=['PUT'])
+def cambiar_contrasena():
+    data = request.get_json()
+    correo = data.get('correo')
+    nueva_password = data.get('nueva_password')
+
+    if not correo or not nueva_password:
+        return jsonify({'error': 'Correo y nueva contraseña son obligatorios'}), 400
+
+    try:
+        with get_session() as session:
+            usuario = session.query(Usuario).filter_by(correo=correo).first()
+            if not usuario:
+                return jsonify({'error': 'No se encontró un usuario con ese correo'}), 404
+
+            # Actualizar la contraseña
+            hashed_password = bcrypt.generate_password_hash(nueva_password).decode('utf-8')
+            usuario.password = hashed_password
+            session.commit()
+
+            return jsonify({'message': 'Contraseña actualizada correctamente'}), 200
+    except SQLAlchemyError as e:
+        return jsonify({'error': str(e)}), 500

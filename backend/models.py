@@ -1,15 +1,20 @@
-# models.py
-from sqlalchemy import types  # Esto importa el módulo 'types' de SQLAlchemy
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Numeric
+from sqlalchemy import Column, Computed, Integer, String, Text, ForeignKey, DateTime, Numeric, Enum
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from geoalchemy2 import Geography
 from extensions import Base
 import sqlalchemy as sa
-tipo_usuario_enum = ENUM('local', 'cliente', name='tipo_usuario_enum', create_type=False)
 
+# Enums
+tipo_usuario_enum = ENUM('local', 'cliente', name='tipo_usuario_enum', create_type=False)
+estado_canje_enum = ENUM('pendiente', 'completado', 'cancelado', name='estado_canje_enum', create_type=False)
+estado_factura_enum = ENUM('pendiente', 'pagada', 'anulada', 'reembolsada', name='estado_factura_enum', create_type=False)
+
+# Modelos
 class Usuario(Base):
     __tablename__ = 'usuario'
+
     id_usuario = Column(Integer, primary_key=True)
     nombre = Column(String(100), nullable=False)
     usuario_nombre = Column(String(50), unique=True, nullable=False)
@@ -31,14 +36,10 @@ class Usuario(Base):
             'telefono': self.telefono,
             'fecha_registro': self.fecha_registro.strftime("%Y-%m-%d %H:%M:%S") if self.fecha_registro else None
         }
-class Geometry(types.UserDefinedType):
-    def get_col_spec(self, **kw):
-        if sa.inspect(self.bind).dialect.name == 'sqlite':
-            return "BLOB"  # SQLite does not support geometry, use BLOB or TEXT
-        else:
-            return "GEOGRAPHY(POINT,4326)"
+
 class Local(Base):
     __tablename__ = 'local'
+
     id_local = Column(Integer, primary_key=True)
     id_usuario = Column(Integer, ForeignKey('usuario.id_usuario', ondelete='CASCADE'), nullable=False)
     nombre_local = Column(String(150), nullable=False)
@@ -66,6 +67,7 @@ class Local(Base):
 
 class Cliente(Base):
     __tablename__ = 'cliente'
+
     id_cliente = Column(Integer, primary_key=True)
     id_usuario = Column(Integer, ForeignKey('usuario.id_usuario', ondelete='CASCADE'), nullable=False)
     puntos = Column(Integer, default=0)
@@ -76,9 +78,10 @@ class Cliente(Base):
             'id_usuario': self.id_usuario,
             'puntos': self.puntos
         }
-    
+
 class Categoria(Base):
     __tablename__ = 'categoria'
+
     id_categoria = Column(Integer, primary_key=True)
     nombre = Column(String(100), nullable=False)
     descripcion = Column(Text, nullable=True)
@@ -91,6 +94,7 @@ class Categoria(Base):
             'descripcion': self.descripcion,
             'url_img': self.url_img
         }
+
 class Producto(Base):
     __tablename__ = 'producto'
 
@@ -99,16 +103,12 @@ class Producto(Base):
     id_local = Column(Integer, ForeignKey('local.id_local', ondelete='CASCADE'), nullable=False)
     nombre = Column(String(150), nullable=False)
     descripcion = Column(Text, nullable=True)
-    precio = Column(Numeric(10, 2), nullable=False)  # Precio con dos decimales
-    puntos_necesario = Column(Integer, nullable=True)  # Puede ser NULL
+    precio = Column(Numeric(10, 2), nullable=False)
+    puntos_necesario = Column(Integer, nullable=True)
     foto_url = Column(Text, nullable=True)
-    disponibilidad = Column(sa.Boolean, default=True)  # TRUE indica disponible
-    descuento = Column(Numeric(5, 2), nullable=True)  # Descuento opcional
+    disponibilidad = Column(sa.Boolean, default=True)
+    descuento = Column(Numeric(5, 2), nullable=True)
     fecha_creacion = Column(DateTime, default=func.current_timestamp())
-
-    # Relaciones
-    categoria = sa.orm.relationship('Categoria', backref='productos', lazy='joined')
-    local = sa.orm.relationship('Local', backref='productos', lazy='joined')
 
     def serialize(self):
         return {
@@ -122,5 +122,100 @@ class Producto(Base):
             'foto_url': self.foto_url,
             'disponibilidad': self.disponibilidad,
             'descuento': str(self.descuento),
+            'fecha_creacion': self.fecha_creacion.strftime("%Y-%m-%d %H:%M:%S") if self.fecha_creacion else None
+        }
+
+class Canje(Base):
+    __tablename__ = 'canje'
+
+    id_canje = Column(Integer, primary_key=True, autoincrement=True)
+    id_cliente = Column(Integer, ForeignKey('cliente.id_cliente', ondelete='CASCADE'), nullable=False)
+    id_local = Column(Integer, ForeignKey('local.id_local', ondelete='CASCADE'), nullable=False)
+    estado = Column(estado_canje_enum, nullable=False)
+    puntos_utilizados = Column(Integer, nullable=False)
+    fecha = Column(DateTime, default=func.current_timestamp())
+
+    def serialize(self):
+        return {
+            'id_canje': self.id_canje,
+            'id_cliente': self.id_cliente,
+            'id_local': self.id_local,
+            'estado': self.estado,
+            'puntos_utilizados': self.puntos_utilizados,
+            'fecha': self.fecha.strftime("%Y-%m-%d %H:%M:%S") if self.fecha else None
+        }
+
+class Factura(Base):
+    __tablename__ = 'factura'
+
+    id_factura = Column(Integer, primary_key=True, autoincrement=True)
+    id_local = Column(Integer, ForeignKey('local.id_local', ondelete='CASCADE'), nullable=False)
+    id_cliente = Column(Integer, ForeignKey('cliente.id_cliente', ondelete='CASCADE'), nullable=False)
+    fecha = Column(DateTime, default=func.current_timestamp())
+    puntos_ganados = Column(Integer, default=0, nullable=False)
+    estado = Column(estado_factura_enum, nullable=False)
+    total = Column(Numeric(10, 2), nullable=False)
+
+    def serialize(self):
+        return {
+            'id_factura': self.id_factura,
+            'id_local': self.id_local,
+            'id_cliente': self.id_cliente,
+            'fecha': self.fecha.strftime("%Y-%m-%d %H:%M:%S") if self.fecha else None,
+            'puntos_ganados': self.puntos_ganados,
+            'estado': self.estado,
+            'total': str(self.total)
+        }
+
+
+class DetalleFactura(Base):
+    __tablename__ = 'detalle_factura'
+
+    id_detalle_factura = Column(Integer, primary_key=True, autoincrement=True)
+    id_factura = Column(Integer, ForeignKey('factura.id_factura', ondelete='CASCADE'), nullable=False)
+    id_producto = Column(Integer, ForeignKey('producto.id_producto', ondelete='CASCADE'), nullable=False)
+    precio_unitario = Column(Numeric(10, 2), nullable=False)
+    cantidad = Column(Integer, nullable=False)
+    subtotal = Column(
+        Numeric(10, 2),
+        Computed('precio_unitario * cantidad', persisted=True)  # Declarar subtotal como generado
+    )
+    fecha_creacion = Column(DateTime, default=func.current_timestamp())
+
+    def serialize(self):
+        return {
+            'id_detalle_factura': self.id_detalle_factura,
+            'id_factura': self.id_factura,
+            'id_producto': self.id_producto,
+            'precio_unitario': str(self.precio_unitario),
+            'cantidad': self.cantidad,
+            'subtotal': str(self.subtotal),  # Esto seguirá funcionando porque SQLAlchemy lo calcula
+            'fecha_creacion': self.fecha_creacion.strftime("%Y-%m-%d %H:%M:%S") if self.fecha_creacion else None
+        }
+    
+
+class DetalleCanje(Base):
+    __tablename__ = 'detalle_canje'
+
+    id_detalle_canje = Column(Integer, primary_key=True, autoincrement=True)
+    id_canje = Column(Integer, ForeignKey('canje.id_canje', ondelete='CASCADE'), nullable=False)
+    id_producto = Column(Integer, ForeignKey('producto.id_producto', ondelete='CASCADE'), nullable=False)
+    cantidad = Column(Integer, nullable=False)
+    puntos_totales = Column(Integer, nullable=False)
+    valor = Column(Numeric(10, 2), nullable=False)
+    fecha_creacion = Column(DateTime, default=func.current_timestamp())
+
+    # Relaciones
+    canje = relationship('Canje', backref='detalles', lazy='joined')
+    producto = relationship('Producto', backref='detalles_canje', lazy='joined')
+
+    def serialize(self):
+        return {
+            'id_detalle_canje': self.id_detalle_canje,
+            'id_canje': self.id_canje,
+            'id_producto': self.id_producto,
+            'cantidad': self.cantidad,
+            'puntos_totales': self.puntos_totales,
+            'valor': str(self.valor),
             'fecha_creacion': self.fecha_creacion.strftime("%Y-%m-%d %H:%M:%S") if self.fecha_creacion else None
         }

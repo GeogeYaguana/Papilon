@@ -94,4 +94,14 @@ CREATE TABLE canje (
     puntos_utilizados INTEGER NOT NULL,  -- Puntos canjeados por el cliente
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Fecha del canje, con valor predeterminado
 );
+CREATE TABLE detalle_canje (
+    id_detalle_canje SERIAL PRIMARY KEY,
+    id_canje INTEGER REFERENCES canje(id_canje) ON DELETE CASCADE,
+    id_producto INTEGER REFERENCES producto(id_producto) ON DELETE CASCADE,
+    cantidad INTEGER NOT NULL,  -- Cantidad de productos canjeados
+    puntos_totales INTEGER NOT NULL,  -- Puntos totales utilizados para este canje
+    valor NUMERIC(10, 2) NOT NULL,  -- Valor del producto en el canje
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Fecha de creación del detalle de canje
+);
+
 

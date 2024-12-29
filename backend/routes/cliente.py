@@ -193,3 +193,29 @@ def delete_cliente(id_cliente):
         except SQLAlchemyError as e:
             session.rollback()
             return jsonify({'error': str(e)}), 400
+@cliente_bp.route('/cliente_id/<int:id_usuario>', methods=['GET'])
+@jwt_required()
+def get_cliente_id_by_usuario_id(id_usuario):
+    with get_session() as session:
+        # Buscar al cliente relacionado con el id_usuario
+        cliente = session.query(Cliente).filter_by(id_usuario=id_usuario).first()
+        if cliente is None:
+            return jsonify({'error': 'Cliente no encontrado para el usuario proporcionado'}), 404
+        
+        return jsonify({'id_cliente': cliente.id_cliente}), 200
+@cliente_bp.route('/clientes/<int:id_cliente>/nombre', methods=['GET'])
+@jwt_required()
+def get_cliente_nombre(id_cliente):
+    with get_session() as session:
+        # Buscar al cliente por su ID
+        cliente = session.query(Cliente).get(id_cliente)
+        if cliente is None:
+            return jsonify({'error': 'Cliente no encontrado'}), 404
+
+        # Buscar el usuario asociado al cliente
+        usuario = session.query(Usuario).get(cliente.id_usuario)
+        if not usuario:
+            return jsonify({'error': 'Usuario asociado no encontrado'}), 404
+
+        # Retornar el nombre del cliente
+        return jsonify({'nombre': usuario.nombre}), 200
