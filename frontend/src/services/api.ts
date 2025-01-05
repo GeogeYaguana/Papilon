@@ -32,3 +32,6 @@ export const createApiClient = (baseUrl: string, port: number): AxiosInstance =>
   return apiClient;
 };
 
+// Instancia global predeterminada para reutilizar
+export const api = createApiClient('http://localhost', 5000); // Ajusta el puerto según tu backend
+
