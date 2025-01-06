@@ -4,6 +4,9 @@ import Home from '../pages/home';
 import Login from '../pages/login';
 import Register from '../pages/register';
 import Dashboard from '../pages/dashboard';
+import Facturas from '../pages/facturas';
+import RegistrarFacturas from '../pages/registrarFacturas';
+import Canjes from '../pages/canjes';
 const routes = [
   {
     path: "/login",
@@ -34,6 +37,30 @@ const routes = [
     element: (
       <MainLayout showSearch={true} showTitle={true} showButton={true} showMenu={true} title="dashboard">
         <Dashboard/>
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/ver-facturas",
+    element: (
+      <MainLayout showSearch={true} showTitle={true} showButton={true} showMenu={true} title="ver-facturas">
+        <Facturas/>
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/registrar-facturas",
+    element: (
+      <MainLayout showSearch={true} showTitle={true} showButton={true} showMenu={true} title="registrar-facturas">
+        <RegistrarFacturas/>
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/canjes",
+    element: (
+      <MainLayout showSearch={true} showTitle={true} showButton={true} showMenu={true} title="canjes">
+        <Canjes/>
       </MainLayout>
     ),
   },
