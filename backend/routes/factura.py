@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import Factura, Cliente, Local , DetalleFactura
+from models import Factura, Cliente, Local, DetalleFactura
 from extensions import get_session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -103,6 +103,7 @@ def delete_factura(id_factura):
         except SQLAlchemyError as e:
             session.rollback()
             return jsonify({'error': str(e)}), 400
+
 detalle_factura_bp = Blueprint('detalle_factura_bp', __name__)
 
 @detalle_factura_bp.route('/detalle_facturas', methods=['POST'])
@@ -151,28 +152,45 @@ def delete_detalle_factura(id_detalle_factura):
         except SQLAlchemyError as e:
             session.rollback()
             return jsonify({'error': str(e)}), 400
+
 @factura_bp.route('/facturas/usuario/<int:id_usuario>', methods=['GET'])
 def get_facturas_by_usuario(id_usuario):
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
     with get_session() as session:
         # Verificar si el usuario está asociado a un cliente
         local = session.query(Local).filter_by(id_usuario=id_usuario).first()
         if not local:
             return jsonify({'error': 'Usuario no asociado a un cliente válido'}), 404
 
-        # Obtener todas las facturas del cliente
-        facturas = session.query(Factura).filter_by(id_local=local.id_local).all()
-        if not facturas:
+        # Obtener facturas con paginación
+        facturas_query = session.query(Factura).filter_by(id_local=local.id_local)
+        facturas_paginated = facturas_query.offset((page - 1) * per_page).limit(per_page).all()
+
+        if not facturas_paginated:
             return jsonify({'message': 'No se encontraron facturas para este usuario'}), 404
 
         # Serializar facturas y sus detalles
         resultado = []
-        for factura in facturas:
+        for factura in facturas_paginated:
             detalles = session.query(DetalleFactura).filter_by(id_factura=factura.id_factura).all()
             factura_data = factura.serialize()
             factura_data['detalle_facturas'] = [detalle.serialize() for detalle in detalles]
             resultado.append(factura_data)
 
-        return jsonify({'facturas': resultado}), 200
+        total_facturas = facturas_query.count()
+
+        return jsonify({
+            'facturas': resultado,
+            'pagination': {
+                'total': total_facturas,
+                'page': page,
+                'per_page': per_page,
+                'pages': (total_facturas + per_page - 1) // per_page
+            }
+        }), 200
+
 @factura_bp.route('/facturas/<int:id_factura>', methods=['PUT'])
 def update_factura(id_factura):
     data = request.get_json()
@@ -201,4 +219,3 @@ def update_factura(id_factura):
         except SQLAlchemyError as e:
             session.rollback()
             return jsonify({'error': str(e)}), 400
-
