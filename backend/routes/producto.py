@@ -1,12 +1,13 @@
 # routes/producto.py
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, app, jsonify, request
 from extensions import get_session
 from models import DetalleCanje, Producto, Categoria, Local , Usuario
 from sqlalchemy.exc import SQLAlchemyError
 from flask_jwt_extended import jwt_required
 import sqlalchemy as sa
-
+from sqlalchemy import text
+from flask import current_app
 
 producto_bp = Blueprint('producto_bp', __name__)
 
@@ -152,21 +153,29 @@ def update_producto(id_producto):
         session.rollback()
         return jsonify({'error': str(e)}), 500
 
-# Ruta para eliminar un producto
 @producto_bp.route('/producto/<int:id_producto>', methods=['DELETE'])
 def delete_producto(id_producto):
     try:
+        # Utilizando un bloque 'with' para manejar la sesión automáticamente
         with get_session() as session:
-            producto = session.query(Producto).get(id_producto)
-            if producto is None:
+            result = session.execute(
+                text("DELETE FROM producto WHERE id_producto = :id_producto"),
+                {'id_producto': id_producto}
+            )
+
+            if result.rowcount == 0:
+                # Si no se encuentra el producto, se revierte la transacción
+                session.rollback()
                 return jsonify({'error': 'Producto no encontrado'}), 404
-            
-            session.delete(producto)
+
             session.commit()
             return jsonify({'message': 'Producto eliminado correctamente'}), 200
+
     except SQLAlchemyError as e:
-        session.rollback()
+        current_app.logger.error(f"Error al eliminar producto {id_producto}: {e}")
         return jsonify({'error': str(e)}), 500
+
+
 
 # Nueva ruta para obtener productos por id_local (sin autenticación)
 @producto_bp.route('/productos/local/<int:id_local>', methods=['GET'])
